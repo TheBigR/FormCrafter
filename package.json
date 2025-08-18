@@ -9,8 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/core": "^0.40.0",
-    "@auth/nextjs": "^0.0.0-380f8d56",
     "@neondatabase/serverless": "^1.0.1",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.1",
