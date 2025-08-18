@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FormField {
   id: string;
@@ -24,6 +25,27 @@ export default function CreateForm() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [privacyLevel, setPrivacyLevel] = useState<'public' | 'creator_only' | 'specific_emails'>('public');
+  const [allowedEmails, setAllowedEmails] = useState<string[]>(['']);
+  
+  const { user, isLoading } = useAuth('/create');
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user, don't render the form (will redirect)
+  if (!user) {
+    return null;
+  }
 
   const fieldTypes = [
     { type: 'text', label: 'Text Input', icon: '📝' },
@@ -98,6 +120,9 @@ export default function CreateForm() {
           title: formTitle,
           description: formDescription,
           fields,
+          privacy_level: privacyLevel,
+          creator_id: user?.id,
+          allowed_emails: privacyLevel === 'specific_emails' ? allowedEmails.filter(email => email.trim()) : [],
         }),
       });
 
@@ -311,28 +336,28 @@ export default function CreateForm() {
             >
               {isPreviewMode ? 'Edit Mode' : 'Preview Mode'}
             </button>
-                         <button 
-               onClick={saveForm}
-               disabled={isSaving}
-               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-             >
-               {isSaving ? 'Saving...' : 'Save Form'}
-             </button>
+            <button 
+              onClick={saveForm}
+              disabled={isSaving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? 'Saving...' : 'Save Form'}
+            </button>
           </div>
         </div>
-             </div>
+      </div>
 
-       {saveMessage && (
-         <div className={`mb-6 p-4 rounded-lg ${
-           saveMessage.includes('Error') || saveMessage.includes('Please') 
-             ? 'bg-red-50 border border-red-200 text-red-700' 
-             : 'bg-green-50 border border-green-200 text-green-700'
-         }`}>
-           {saveMessage}
-         </div>
-       )}
+      {saveMessage && (
+        <div className={`mb-6 p-4 rounded-lg ${
+          saveMessage.includes('Error') || saveMessage.includes('Please') 
+            ? 'bg-red-50 border border-red-200 text-red-700' 
+            : 'bg-green-50 border border-green-200 text-green-700'
+        }`}>
+          {saveMessage}
+        </div>
+      )}
 
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Builder Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           {/* Form Settings */}
@@ -359,6 +384,58 @@ export default function CreateForm() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              {/* Privacy Settings */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Privacy Level</label>
+                <select
+                  value={privacyLevel}
+                  onChange={(e) => setPrivacyLevel(e.target.value as 'public' | 'creator_only' | 'specific_emails')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="public">Public - Anyone can access</option>
+                  <option value="creator_only">Private - Only you can access</option>
+                  <option value="specific_emails">Restricted - Specific emails only</option>
+                </select>
+              </div>
+
+              {privacyLevel === 'specific_emails' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Allowed Email Addresses</label>
+                  <div className="space-y-2">
+                    {allowedEmails.map((email, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => {
+                            const newEmails = [...allowedEmails];
+                            newEmails[index] = e.target.value;
+                            setAllowedEmails(newEmails);
+                          }}
+                          placeholder="Enter email address"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={() => {
+                            const newEmails = allowedEmails.filter((_, i) => i !== index);
+                            setAllowedEmails(newEmails.length > 0 ? newEmails : ['']);
+                          }}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => setAllowedEmails([...allowedEmails, ''])}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      + Add Email
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

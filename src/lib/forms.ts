@@ -20,6 +20,9 @@ export interface Form {
   description?: string;
   fields: FormField[];
   slug: string;
+  privacy_level: 'public' | 'creator_only' | 'specific_emails';
+  creator_id: string;
+  allowed_emails: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -41,16 +44,32 @@ export class FormsService {
     description?: string;
     fields: FormField[];
     slug: string;
+    privacy_level: 'public' | 'creator_only' | 'specific_emails';
+    creator_id: string;
+    allowed_emails?: string[];
   }): Promise<Form> {
     const [form] = await sql`
-      INSERT INTO forms (title, description, fields, slug)
-      VALUES (${data.title}, ${data.description}, ${JSON.stringify(data.fields)}, ${data.slug})
+      INSERT INTO forms (title, description, fields, slug, privacy_level, creator_id, allowed_emails)
+      VALUES (${data.title}, ${data.description}, ${JSON.stringify(data.fields)}, ${data.slug}, ${data.privacy_level}, ${data.creator_id}, ${data.allowed_emails || []})
       RETURNING *
     `;
     return form;
   }
 
-  // Get all forms
+  // Get all forms accessible to a user
+  static async getFormsForUser(userId: string): Promise<Form[]> {
+    return await sql`
+      SELECT * FROM forms 
+      WHERE privacy_level = 'public' 
+         OR creator_id = ${userId}
+         OR (privacy_level = 'specific_emails' AND ${userId} IN (
+           SELECT id FROM users WHERE email = ANY(allowed_emails)
+         ))
+      ORDER BY updated_at DESC
+    `;
+  }
+
+  // Get all forms (admin only)
   static async getAllForms(): Promise<Form[]> {
     return await sql`
       SELECT * FROM forms 
