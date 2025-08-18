@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 
 interface FormField {
   id: string;
@@ -115,8 +114,8 @@ export default function CreateForm() {
           setSaveMessage('');
         }, 5000);
       } else {
-        const error = await response.json();
-        setSaveMessage(`Error: ${error.error}`);
+        const errorData = await response.json();
+        setSaveMessage(`Error: ${errorData.error}`);
       }
     } catch (error) {
       setSaveMessage('Failed to save form. Please try again.');

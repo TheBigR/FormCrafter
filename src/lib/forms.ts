@@ -28,7 +28,7 @@ export interface Form {
 export interface FormSubmission {
   id: string;
   form_id: string;
-  data: Record<string, any>;
+  data: Record<string, string | string[]>;
   ip_address?: string;
   user_agent?: string;
   submitted_at: string;
@@ -102,7 +102,7 @@ export class FormsService {
   // Submit form data
   static async submitForm(data: {
     form_id: string;
-    data: Record<string, any>;
+    data: Record<string, string | string[]>;
     ip_address?: string;
     user_agent?: string;
   }): Promise<FormSubmission> {

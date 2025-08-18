@@ -13,7 +13,7 @@ interface Form {
 
 export default function PublicForm({ params }: { params: { slug: string } }) {
   const [form, setForm] = useState<Form | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, string | string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
         setForm(formData);
         
         // Initialize form data with empty values
-        const initialData: Record<string, any> = {};
+        const initialData: Record<string, string | string[]> = {};
         formData.fields.forEach((field: FormField) => {
           if (field.type === 'checkbox') {
             initialData[field.id] = [];
@@ -49,7 +49,7 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
     }
   };
 
-  const handleInputChange = (fieldId: string, value: any) => {
+  const handleInputChange = (fieldId: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value
@@ -58,7 +58,7 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
 
   const handleCheckboxChange = (fieldId: string, option: string, checked: boolean) => {
     setFormData(prev => {
-      const currentValues = prev[fieldId] || [];
+      const currentValues = Array.isArray(prev[fieldId]) ? prev[fieldId] as string[] : [];
       if (checked) {
         return {
           ...prev,
@@ -109,7 +109,7 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
       if (response.ok) {
         setSubmitMessage('Thank you! Your form has been submitted successfully.');
         // Clear form data
-        const initialData: Record<string, any> = {};
+        const initialData: Record<string, string | string[]> = {};
         form.fields.forEach((field: FormField) => {
           if (field.type === 'checkbox') {
             initialData[field.id] = [];
@@ -119,8 +119,8 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
         });
         setFormData(initialData);
       } else {
-        const error = await response.json();
-        setSubmitMessage(`Error: ${error.error}`);
+        const errorData = await response.json();
+        setSubmitMessage(`Error: ${errorData.error}`);
       }
     } catch (error) {
       setSubmitMessage('Failed to submit form. Please try again.');
