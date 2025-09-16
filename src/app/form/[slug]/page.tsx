@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { FormField } from '@/lib/forms';
 
 interface Form {
@@ -11,7 +12,8 @@ interface Form {
   slug: string;
 }
 
-export default function PublicForm({ params }: { params: { slug: string } }) {
+export default function PublicForm({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const [form, setForm] = useState<Form | null>(null);
   const [formData, setFormData] = useState<Record<string, string | string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,11 +22,11 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     fetchForm();
-  }, [params.slug]);
+  }, [slug]);
 
   const fetchForm = async () => {
     try {
-      const response = await fetch(`/api/forms/${params.slug}`);
+      const response = await fetch(`/api/forms/${slug}`);
       if (response.ok) {
         const formData = await response.json();
         setForm(formData);
@@ -98,7 +100,7 @@ export default function PublicForm({ params }: { params: { slug: string } }) {
     setSubmitMessage('');
 
     try {
-      const response = await fetch(`/api/forms/${params.slug}`, {
+      const response = await fetch(`/api/forms/${slug}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,10 +3,11 @@ import { FormsService } from '@/lib/forms';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const form = await FormsService.getFormBySlug(params.slug);
+    const { slug } = await params;
+    const form = await FormsService.getFormBySlug(slug);
     
     if (!form) {
       return NextResponse.json(
@@ -27,10 +28,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const form = await FormsService.getFormBySlug(params.slug);
+    const { slug } = await params;
+    const form = await FormsService.getFormBySlug(slug);
     
     if (!form) {
       return NextResponse.json(

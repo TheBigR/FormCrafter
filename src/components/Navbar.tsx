@@ -77,7 +77,7 @@ export default function Navbar() {
                   href="/forms" 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Forms
+                  My Forms
                 </Link>
                 <Link 
                   href="/create" 
@@ -146,7 +146,7 @@ export default function Navbar() {
                     className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Forms
+                    My Forms
                   </Link>
                   <Link 
                     href="/create" 
